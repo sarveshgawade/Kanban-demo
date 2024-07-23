@@ -1,6 +1,7 @@
 import {DragDropContext,Draggable,Droppable} from 'react-beautiful-dnd'
 import { useState } from 'react';
 import './App.css'
+import StoreList from './components/StoreList';
 
 const DATA = [
   {
@@ -59,6 +60,33 @@ function App() {
 
       return setStores(reorderedStores)
     }
+
+    const storeSourceIndex = stores.findIndex(store => store.id === source.droppableId)
+    const storeDestinationIndex = stores.findIndex(store => store.id === destination.droppableId)
+
+    const newSourceItems = [...stores[storeSourceIndex].items]
+    const newDestionationItems = 
+      source.droppableId === destination.droppableId ? 
+      newSourceItems : [...stores[storeDestinationIndex].items]
+
+    const [deletedItem] = newSourceItems.splice(source.index,1)
+    newDestionationItems.splice(destination.index,0,deletedItem)
+
+    const newStores = [...stores]
+
+    newStores[storeSourceIndex] = {
+      ...stores[storeSourceIndex],
+        items: newSourceItems
+    }
+
+    newStores[storeDestinationIndex] = {
+      ...stores[storeDestinationIndex],
+        items: newDestionationItems
+    }
+
+    setStores(newStores)
+
+    
   }
     return (
       <div className='layout__wrapper'>
@@ -80,14 +108,14 @@ function App() {
                                   {...provided.dragHandleProps} 
                                   {...provided.draggableProps} 
                                   ref={provided.innerRef}
-                                  className='store-container'
                                 >
-                                  <h3>{store.name}</h3>
+                                  <StoreList store={store}/>
                                 </div>
                             )}
                           </Draggable>
                         ))
                       }
+                      {provided.placeholder}
                   </div>
               )}
             </Droppable>
